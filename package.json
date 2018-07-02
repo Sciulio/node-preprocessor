@@ -1,0 +1,16 @@
+{
+  "name": "node-preprocessor",
+  "version": "1.0.0",
+  "description": "Node preprocessor for any text-type file.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "repository": "github:Sciulio/node-preprocessor",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "preprocessor"
+  ],
+  "author": "Sciulio <sciulio@msn.com>",
+  "license": "ISC"
+}
