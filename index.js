@@ -1,67 +1,8 @@
-/*
-let text = `
-	var gigi = 12;
-	// #if FRIK > 0
-		gigi += 4;
-	// #else
-		gigi -= 4;
-	// #endif
-	//#if FRIK > 120
-		gigi += 0.5;
-	// #else
-		gigi -= 0.25;
-	// #endif
-	//  #if FRIK > 120
-		gigi = -gigi;
-	// #endif
-	// #echo var lello = gigi + \${FRIK};
-	//  #ifdef GIGI
-		gigi *= 100;
-	// #endif
-	//  #ifdef GIGIo
-		gigi = 0;
-	// #endif
-	console.log("GIGI:", gigi);
-`;
-
-const context = {
-  FRIK: 50,
-  GIGI: true
-};
-*/
-
-/*
-
-// ( _expr_varN_ ~ _var1_ || _var2_ && (_var3_ || _var4_) )
-
-// #if _expr1_
-// #elseifdef _expr_var1_
-// #elseif _expr2_
-// #else
-// #endif
-
-
-// #ifdef _expr_var1_
-// #elseifdef _expr_var2_
-// #elseif _expr1_
-// #elseifnotdef _expr_var3_
-// #else
-// #endif
-
-// #echo ...code... ${var_or_expr_1} ...code... ${var_or_expr_2}
-
-*/
-
 function defKeywordParser(expr, undef) {
-  /*console.log("----------------------------------------")
-  console.log(expr)
-  console.log(expr.replace(/\b(\w+)\b/gi, function(match) {
-    return `(typeof ${match.trim()} ${undef ? "=" : "!" }= 'undefined')`;
-  }))*/
-  return expr.replace(/\b(\w+)\b/gi, function(match) {
+  return expr
+  .replace(/\b(\w+)\b/gi, function(match) {
     return `(typeof ${match.trim()} ${undef ? "=" : "!" }= 'undefined')`;
   });
-  //return expr.split("&&").map(param => `typeof ${param.trim()} ${undef ? "=" : "!" }= 'undefined'`).join(" && ");
 }
 
 const keywordsSet = [{
@@ -156,9 +97,8 @@ function parseKeywords(text) {
   const parsedCodeList = [];
 
   keywordsSet.forEach(keywordItem => {
-    //console.log("Parsing keyword:", keywordItem.name);
-
     let execMatch;
+
     while ((execMatch = keywordItem.regexp.exec(text)) !== null) {
       const startsAt = execMatch.index;
       const endsAt = keywordItem.regexp.lastIndex;
@@ -189,14 +129,7 @@ function parseInjectingCode(parsedCodeList, text) {
   parsedCodeList.forEach(codeItem => {
     const rawCode = text.substring(prevEndIdx, codeItem.startsAt);
     const parsedRowCode = parseRawCode(rawCode);
-    const injectedExpression = codeItem.keywordItem.compile(codeItem.expr)
-
-    /*
-    console.log(codeItem.keywordItem.name, codeItem.startsAt, codeItem.endsAt, prevEndIdx);
-    console.log("EXPR:", codeItem.expr);
-    console.log("CODE:", rawCode);
-    console.log("---------------");
-    */
+    const injectedExpression = codeItem.keywordItem.compile(codeItem.expr);
 
     injectingCodeList.push(parsedRowCode, injectedExpression);
 
@@ -211,38 +144,19 @@ function parseInjectingCode(parsedCodeList, text) {
 }
 
 module.exports.preprocess = function (text, context) {
-  text += require('os').EOL; // add newline in case of a preprocessor directive at the end of text;
+  // add newline in case of a preprocessor directive at the end of text
+  text += require('os').EOL;
 
   const parsedCodeList = parseKeywords(text);
-  const parsedInjectingCode = parseInjectingCode(parsedCodeList, text);
-  const unescapedParsedInjectingCode = unescapeRowCode(parsedInjectingCode);
-
-  //return fullInjectingCode;
+  const parsedRowCode = parseInjectingCode(parsedCodeList, text);
+  const unescapedParsedRowCode = unescapeRowCode(parsedRowCode);
 
   let preprocessedCode;
   //TODO: improve isolation
   with (context) {
-    const evaluatedCode = eval(unescapedParsedInjectingCode);
+    const evaluatedCode = eval(unescapedParsedRowCode);
     preprocessedCode = unesacpeInjectedCode(evaluatedCode);
   }
 
   return preprocessedCode;
 }
-
-/*
-const funcParams = Object.keys(context); //.concat(fullInjectingCode);
-const compilerOfCompiler = new Function(
-	funcParams.length ?
-		//"return new Function('" + funcParams.join("','") + "', `" + fullInjectingCode + "+`);" :
-		"return new Function('" + funcParams.join("','") + "', '" + fullInjectingCode.replace(/\n/g, "\\n") + "');" :
-		"return new Function(`" + fullInjectingCode + "`);"
-);
-const builtCompiler = compilerOfCompiler();
-console.log(builtCompiler.toString())
-const compiler = builtCompiler(context);
-console.log(compiler.toString())
-let built = compiler(context);
-console.log("built")
-console.log("Context:", context)
-console.log(built)
-*/

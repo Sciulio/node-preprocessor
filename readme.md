@@ -57,12 +57,14 @@ _var1_ || _var2_ && (_var3_ || _var4_)
 
 ### usage in NodeJs
 
+_javascript_
 ```javascript
 const nodepreprocess = require("nodepreprocess");
 
 const preprocessedText = nodepreprocess.preprocess(text, context);
 ```
 
+_typescript_
 ```typescript
 import { preprocess } from "nodepreprocess";
 
@@ -71,5 +73,9 @@ const preprocessedText = preprocess(text, context);
 
 ## todo
 
- - [ ] include
+ - [ ] add export for template function (template(text): (context) => string)
+ - [ ] include files/registered partials
+   - [ ] add partials registration
+   - [ ] add file loading from fs module
+     - [ ] add async methods
  - [ ] improve documentation
